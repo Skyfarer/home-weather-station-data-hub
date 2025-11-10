@@ -1,0 +1,58 @@
+# Local configuration (DO NOT commit your actual config!)
+config.yaml.local
+config.local.yaml
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Docker
+mqtt-monitor.tar
+*.tar
+
+# RRD files (don't commit data!)
+*.rrd
+
+# Kubernetes secrets or sensitive configs
+*secret*.yaml
+*credentials*.yaml
+
+# Logs
+*.log
+
+# Backup files
+*.bak
+*.backup

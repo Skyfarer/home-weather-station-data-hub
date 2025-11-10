@@ -1,0 +1,5 @@
+# MQTT client library
+paho-mqtt>=1.6.1
+
+# YAML configuration parsing
+pyyaml>=6.0

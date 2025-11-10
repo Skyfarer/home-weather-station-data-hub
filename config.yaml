@@ -1,0 +1,14 @@
+# MQTT Monitor Configuration
+
+mqtt:
+  broker: "mqtt.example.local"  # Your MQTT broker hostname or IP
+  port: 1883
+  topic: "sensor/device/+/data"  # Your MQTT topic
+
+# Station elevation for sea level pressure conversion
+elevation:
+  feet: 0  # Set your elevation in feet above sea level
+
+# RRD database for storing sensor data
+rrd:
+  path: "/data/rrd/sensors.rrd"
