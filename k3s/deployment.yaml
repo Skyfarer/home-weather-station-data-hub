@@ -19,6 +19,9 @@ spec:
       - name: mqtt-monitor
         image: mqtt-monitor:latest
         imagePullPolicy: IfNotPresent
+        env:
+        - name: PYTHONUNBUFFERED
+          value: "1"
         volumeMounts:
         - name: config
           mountPath: /app/config.yaml
