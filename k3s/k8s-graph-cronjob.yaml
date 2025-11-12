@@ -193,6 +193,50 @@ data:
     create_graphs "1year" "Last Year" "end-1y"
 
     echo ""
+
+    # Generate current_data.json for index.html
+    echo "Generating current_data.json..."
+
+    # Get the latest data from RRD
+    # rrdtool lastupdate returns: timestamp: temp pressure humidity voltage
+    LAST_UPDATE=$(rrdtool lastupdate "$RRD_FILE" | tail -n 1)
+
+    if [ -n "$LAST_UPDATE" ]; then
+        # Parse the last update (format: "timestamp: temp:pressure:humidity:voltage")
+        TIMESTAMP=$(echo "$LAST_UPDATE" | awk '{print $1}' | tr -d ':')
+        VALUES=$(echo "$LAST_UPDATE" | awk '{print $2}')
+
+        # Split values (temp:pressure:humidity:voltage)
+        TEMP_C=$(echo "$VALUES" | cut -d':' -f1)
+        PRESSURE=$(echo "$VALUES" | cut -d':' -f2)
+        HUMIDITY=$(echo "$VALUES" | cut -d':' -f3)
+        VOLTAGE=$(echo "$VALUES" | cut -d':' -f4)
+
+        # Convert temperature from Celsius to Fahrenheit
+        TEMP_F=$(echo "$TEMP_C * 9 / 5 + 32" | bc -l)
+
+        # Convert Unix timestamp to ISO 8601 format
+        ISO_TIMESTAMP=$(date -d "@$TIMESTAMP" -Iseconds 2>/dev/null || date -r "$TIMESTAMP" -Iseconds 2>/dev/null)
+
+        # Write JSON file atomically
+        cat > "$OUTPUT_DIR/current_data.json.tmp" <<EOF
+    {
+      "temperature": $(printf "%.2f" "$TEMP_F"),
+      "humidity": $(printf "%.1f" "$HUMIDITY"),
+      "sea_level_pressure": $(printf "%.2f" "$PRESSURE"),
+      "battery": $(printf "%.2f" "$VOLTAGE"),
+      "timestamp": "$ISO_TIMESTAMP"
+    }
+    EOF
+
+        # Atomic rename
+        mv "$OUTPUT_DIR/current_data.json.tmp" "$OUTPUT_DIR/current_data.json"
+        echo "Generated current_data.json with latest sensor readings"
+    else
+        echo "Warning: No data found in RRD database"
+    fi
+
+    echo ""
     echo "All graphs generated successfully!"
     echo "Output directory: $OUTPUT_DIR/"
 
