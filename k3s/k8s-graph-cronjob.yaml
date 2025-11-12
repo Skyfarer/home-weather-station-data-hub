@@ -202,11 +202,11 @@ data:
     LAST_UPDATE=$(rrdtool lastupdate "$RRD_FILE" | tail -n 1)
 
     if [ -n "$LAST_UPDATE" ]; then
-        # Parse the last update (format: "timestamp: temp humidity pressure voltage")
+        # Parse the last update (format: "timestamp: temp pressure humidity voltage")
         TIMESTAMP=$(echo "$LAST_UPDATE" | awk '{print $1}' | tr -d ':')
         TEMP_C=$(echo "$LAST_UPDATE" | awk '{print $2}')
-        HUMIDITY=$(echo "$LAST_UPDATE" | awk '{print $3}')
-        PRESSURE=$(echo "$LAST_UPDATE" | awk '{print $4}')
+        PRESSURE=$(echo "$LAST_UPDATE" | awk '{print $3}')
+        HUMIDITY=$(echo "$LAST_UPDATE" | awk '{print $4}')
         VOLTAGE=$(echo "$LAST_UPDATE" | awk '{print $5}')
 
         # Convert temperature from Celsius to Fahrenheit
