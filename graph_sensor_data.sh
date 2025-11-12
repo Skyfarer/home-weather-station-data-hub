@@ -3,8 +3,8 @@
 # Graph sensor data from RRD database
 # Generates graphs for 24 hours, 1 week, 1 month, and 1 year
 
-RRD_FILE="/mnt/honeycomb/ssd_nas/rrd/sensors.rrd"
-OUTPUT_DIR="$HOME/www/environment"
+RRD_FILE="/data/rrd/sensors.rrd"
+OUTPUT_DIR="/data/www/weather_station"
 
 # Create output directory if it doesn't exist
 mkdir -p "$OUTPUT_DIR"
@@ -31,9 +31,12 @@ create_graphs() {
         DEF:temp="$RRD_FILE":temperature:AVERAGE \
         DEF:temp_min="$RRD_FILE":temperature:MIN \
         DEF:temp_max="$RRD_FILE":temperature:MAX \
-        CDEF:temp_f=temp,9,*,5,/,32,+ \
-        CDEF:temp_min_f=temp_min,9,*,5,/,32,+ \
-        CDEF:temp_max_f=temp_max,9,*,5,/,32,+ \
+        CDEF:temp_filtered=temp,-40,LT,UNKN,temp,60,GT,UNKN,temp,IF,IF \
+        CDEF:temp_min_filtered=temp_min,-40,LT,UNKN,temp_min,60,GT,UNKN,temp_min,IF,IF \
+        CDEF:temp_max_filtered=temp_max,-40,LT,UNKN,temp_max,60,GT,UNKN,temp_max,IF,IF \
+        CDEF:temp_f=temp_filtered,9,*,5,/,32,+ \
+        CDEF:temp_min_f=temp_min_filtered,9,*,5,/,32,+ \
+        CDEF:temp_max_f=temp_max_filtered,9,*,5,/,32,+ \
         AREA:temp_max_f#FFCCCC:"Max" \
         AREA:temp_min_f#FFFFFF:"Min" \
         LINE2:temp_f$COLOR_TEMP:"Temperature" \
@@ -42,24 +45,29 @@ create_graphs() {
         GPRINT:temp_min_f:MIN:"Min\:%8.2lf °F" \
         GPRINT:temp_max_f:MAX:"Max\:%8.2lf °F\n"
 
-    # Pressure graph (scaled to hPa/mbar range)
+    # Pressure graph (converted to inches of mercury)
     rrdtool graph "$OUTPUT_DIR/pressure_${period}.png" \
         --start "$start" \
         --title "Atmospheric Pressure - $title" \
-        --vertical-label "Pressure (hPa)" \
+        --vertical-label "Pressure (inHg)" \
         --width 800 \
         --height 300 \
-        --alt-autoscale \
+        --lower-limit 28.0 \
+        --upper-limit 31.0 \
+        --rigid \
         DEF:pressure="$RRD_FILE":pressure:AVERAGE \
         DEF:pressure_min="$RRD_FILE":pressure:MIN \
         DEF:pressure_max="$RRD_FILE":pressure:MAX \
-        AREA:pressure_max#CCCCFF:"Max" \
-        AREA:pressure_min#FFFFFF:"Min" \
-        LINE2:pressure$COLOR_PRESSURE:"Pressure" \
-        GPRINT:pressure:LAST:"Current\:%8.2lf hPa" \
-        GPRINT:pressure:AVERAGE:"Average\:%8.2lf hPa" \
-        GPRINT:pressure_min:MIN:"Min\:%8.2lf hPa" \
-        GPRINT:pressure_max:MAX:"Max\:%8.2lf hPa\n"
+        CDEF:pressure_inhg=pressure,33.8639,/ \
+        CDEF:pressure_min_inhg=pressure_min,33.8639,/ \
+        CDEF:pressure_max_inhg=pressure_max,33.8639,/ \
+        AREA:pressure_max_inhg#CCCCFF:"Max" \
+        AREA:pressure_min_inhg#FFFFFF:"Min" \
+        LINE2:pressure_inhg$COLOR_PRESSURE:"Pressure" \
+        GPRINT:pressure_inhg:LAST:"Current\:%8.2lf inHg" \
+        GPRINT:pressure_inhg:AVERAGE:"Average\:%8.2lf inHg" \
+        GPRINT:pressure_min_inhg:MIN:"Min\:%8.2lf inHg" \
+        GPRINT:pressure_max_inhg:MAX:"Max\:%8.2lf inHg\n"
 
     # Humidity graph
     rrdtool graph "$OUTPUT_DIR/humidity_${period}.png" \

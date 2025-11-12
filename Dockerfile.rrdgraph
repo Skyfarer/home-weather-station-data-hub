@@ -1,0 +1,14 @@
+FROM alpine:3.19
+
+# Install rrdtool and bash
+RUN apk add --no-cache \
+    rrdtool \
+    bash
+
+# Set bash as the default shell
+SHELL ["/bin/bash", "-c"]
+
+# Set working directory
+WORKDIR /app
+
+CMD ["/bin/bash"]
